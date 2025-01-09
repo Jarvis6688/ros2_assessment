@@ -10,10 +10,9 @@ from launch_ros.substitutions import FindPackageShare
 from launch_ros.actions import Node, SetParameter, SetRemap, PushRosNamespace, RosTimer
 
 
-def robot_controller_actions(context : LaunchContext):
-
+def robot_controller_actions(context: LaunchContext):
     num_robots = int(context.launch_configurations['num_robots'])
-        
+
     yaml_path = os.path.join(get_package_share_directory('assessment'), 'config', 'initial_poses.yaml')
 
     with open(yaml_path, 'r') as f:
@@ -24,7 +23,6 @@ def robot_controller_actions(context : LaunchContext):
     actions = []
 
     for robot_number in range(1, num_robots + 1):
-
         robot_name = 'robot' + str(robot_number)
 
         group = GroupAction([
@@ -33,17 +31,19 @@ def robot_controller_actions(context : LaunchContext):
             SetRemap('/tf', 'tf'),
             SetRemap('/tf_static', 'tf_static'),
 
-           #  Node(
-                # package='solution',
-                # executable='robot_controller',
+            Node(
+                package='solution',
+                executable='robot_controller',
                 # prefix=['xfce4-terminal --tab --execute'], # Opens in new tab
                 # prefix=['xfce4-terminal --execute'], # Opens in new window
                 # prefix=['gnome-terminal --tab --execute'], # Opens in new tab
                 # prefix=['gnome-terminal --window --execute'], # Opens in new window
                 # prefix=['wt.exe --window 0 new-tab wsl.exe -e bash -ic'], # Opens in new tab
                 # prefix=['wt.exe wsl.exe -e bash -ic'], # Opens in new window
-               #  output='screen',
-               #  parameters=[initial_poses[robot_name]]),
+                output='screen',
+                parameters=[initial_poses[robot_name],
+                            {'robot_id': robot_name}
+                            ]),
 
             # Node(
             #     package='turtlebot3_gazebo',
@@ -56,8 +56,8 @@ def robot_controller_actions(context : LaunchContext):
 
     return actions
 
-def generate_launch_description():
 
+def generate_launch_description():
     package_name = 'solution'
 
     num_robots = LaunchConfiguration('num_robots')
@@ -70,22 +70,22 @@ def generate_launch_description():
         'num_robots',
         default_value='1',
         description='Number of robots to spawn')
-    
+
     declare_random_seed_cmd = DeclareLaunchArgument(
         'random_seed',
         default_value='0',
         description='Random number seed for item manager')
-    
+
     declare_experiment_duration_cmd = DeclareLaunchArgument(
         'experiment_duration',
         default_value='1500.0',
         description='Experiment duration in seconds')
-    
+
     declare_data_log_path_cmd = DeclareLaunchArgument(
         'data_log_path',
-        default_value = os.path.join(get_package_prefix(package_name), '../../'),
+        default_value=os.path.join(get_package_prefix(package_name), '../../'),
         description='Full path to directory where data logs will be saved')
-    
+
     declare_data_log_filename_cmd = DeclareLaunchArgument(
         'data_log_filename',
         default_value='data_log',
@@ -104,7 +104,7 @@ def generate_launch_description():
                 FindPackageShare('assessment'),
                 'launch',
                 'assessment_launch.py'
-                ])
+            ])
         ),
         launch_arguments={'num_robots': num_robots,
                           'visualise_sensors': 'false',
@@ -136,12 +136,12 @@ def generate_launch_description():
                    '--filename', data_log_filename,
                    '--random_seed', random_seed])
 
-    timeout_cmd = RosTimer(                                         
-            period = experiment_duration,
-            actions = [                                                       
-                Shutdown(reason="Experiment timeout reached")     
-            ],
-        )
+    timeout_cmd = RosTimer(
+        period=experiment_duration,
+        actions=[
+            Shutdown(reason="Experiment timeout reached")
+        ],
+    )
 
     ld = LaunchDescription()
 
