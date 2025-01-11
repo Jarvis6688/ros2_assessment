@@ -68,7 +68,7 @@ def generate_launch_description():
 
     declare_num_robots_cmd = DeclareLaunchArgument(
         'num_robots',
-        default_value='1',
+        default_value='3',
         description='Number of robots to spawn')
 
     declare_random_seed_cmd = DeclareLaunchArgument(
@@ -78,7 +78,7 @@ def generate_launch_description():
 
     declare_experiment_duration_cmd = DeclareLaunchArgument(
         'experiment_duration',
-        default_value='1500.0',
+        default_value='300.0',
         description='Experiment duration in seconds')
 
     declare_data_log_path_cmd = DeclareLaunchArgument(
